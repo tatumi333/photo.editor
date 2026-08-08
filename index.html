@@ -1,25 +1,44 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>写真まとめツール</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>写真まとめツール</title>
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
-<div class="toolbar">
-  <h1>写真まとめツール</h1>
-  <label class="button">
-    写真を選択
-    <input id="fileInput" type="file" accept="image/*" multiple hidden>
-  </label>
-  <button id="clearBtn">すべて削除</button>
-  <button id="printBtn">PDF出力 / 印刷</button>
-  <span id="count">写真 0枚</span>
-</div>
 
-<main id="pages"></main>
+  <div class="toolbar">
+    <h1>写真まとめツール</h1>
 
-<script src="script.js"></script>
+    <label class="button">
+      写真を選択
+      <input
+        id="fileInput"
+        type="file"
+        accept="image/*"
+        multiple
+        hidden
+      >
+    </label>
+
+    <button id="clearBtn" type="button">
+      すべて削除
+    </button>
+
+    <button id="printBtn" type="button">
+      PDF出力 / 印刷
+    </button>
+
+    <span id="count">
+      写真 0枚
+    </span>
+  </div>
+
+  <main id="pages"></main>
+
+  <script src="script.js"></script>
+
 </body>
 </html>
