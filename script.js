@@ -15,6 +15,7 @@ let draggedIndex = null;
 // ========================================
 
 fileInput.addEventListener("change", async (e) => {
+
   const files = [...e.target.files]
     .filter(f => f.type.startsWith("image/"));
 
@@ -36,16 +37,19 @@ fileInput.addEventListener("change", async (e) => {
 // ========================================
 
 function fileToDataURL(file) {
+
   return new Promise((resolve, reject) => {
 
     const reader = new FileReader();
 
     reader.onload = () => {
+
       resolve({
         src: reader.result,
         name: file.name,
         caption: ""
       });
+
     };
 
     reader.onerror = reject;
@@ -61,6 +65,16 @@ function fileToDataURL(file) {
 
 function movePhoto(fromIndex, toIndex) {
 
+  // 範囲外なら何もしない
+  if (
+    fromIndex < 0 ||
+    fromIndex >= photos.length ||
+    toIndex < 0 ||
+    toIndex >= photos.length
+  ) {
+    return;
+  }
+
   // 同じ写真なら何もしない
   if (fromIndex === toIndex) {
     return;
@@ -70,10 +84,45 @@ function movePhoto(fromIndex, toIndex) {
   const temp = photos[fromIndex];
 
   photos[fromIndex] = photos[toIndex];
+
   photos[toIndex] = temp;
 
   // 画面を再描画
   render();
+}
+
+
+// ========================================
+// 写真を1つ前へ
+// ========================================
+
+function movePhotoUp(index) {
+
+  if (index <= 0) {
+    return;
+  }
+
+  movePhoto(
+    index,
+    index - 1
+  );
+}
+
+
+// ========================================
+// 写真を1つ後ろへ
+// ========================================
+
+function movePhotoDown(index) {
+
+  if (index >= photos.length - 1) {
+    return;
+  }
+
+  movePhoto(
+    index,
+    index + 1
+  );
 }
 
 
@@ -87,15 +136,20 @@ function render() {
   pages.innerHTML = "";
 
   // 写真枚数を表示
-  count.textContent = `写真 ${photos.length}枚`;
+  count.textContent =
+    `写真 ${photos.length}枚`;
 
 
+  // ======================================
   // 写真がない場合
+  // ======================================
+
   if (photos.length === 0) {
 
     const msg = document.createElement("div");
 
     msg.style.textAlign = "center";
+
     msg.style.padding = "50px";
 
     msg.textContent =
@@ -107,9 +161,9 @@ function render() {
   }
 
 
-  // ========================================
+  // ======================================
   // 4枚ずつページを作成
-  // ========================================
+  // ======================================
 
   for (
     let start = 0;
@@ -127,149 +181,254 @@ function render() {
     grid.className = "photo-grid";
 
 
-    // ======================================
+    // ====================================
     // 1ページにつき4枚
-    // ======================================
+    // ====================================
 
-    const chunk = photos.slice(start, start + 4);
+    const chunk =
+      photos.slice(start, start + 4);
 
 
     for (let i = 0; i < 4; i++) {
 
-      const card = document.createElement("div");
+      const card =
+        document.createElement("div");
 
-      card.className = "photo-card";
+      card.className =
+        "photo-card";
 
 
-      // ====================================
+      // ==================================
       // 写真が存在する場合
-      // ====================================
+      // ==================================
 
       if (chunk[i]) {
 
         // photos配列全体での位置
-        const photoIndex = start + i;
+        const photoIndex =
+          start + i;
 
 
-        // ==================================
+        // =================================
         // 写真名称入力欄
-        // ==================================
+        // =================================
 
-        const caption = document.createElement("input");
+        const caption =
+          document.createElement("input");
 
-        caption.className = "photo-name";
+        caption.className =
+          "photo-name";
 
         caption.type = "text";
 
         caption.placeholder =
           "写真の名称・説明を入力";
 
-        caption.value = chunk[i].caption;
+        caption.value =
+          chunk[i].caption;
 
 
-        caption.addEventListener("input", () => {
+        caption.addEventListener(
+          "input",
+          () => {
 
-          chunk[i].caption = caption.value;
+            /*
+             * chunk[i]ではなく
+             * photos[photoIndex]を直接変更
+             */
+            photos[photoIndex].caption =
+              caption.value;
+          }
+        );
 
-        });
 
-
-        // ==================================
+        // =================================
         // 写真表示部分
-        // ==================================
+        // =================================
 
-        const box = document.createElement("div");
+        const box =
+          document.createElement("div");
 
-        box.className = "photo-box";
-
-
-        const img = document.createElement("img");
-
-        img.src = chunk[i].src;
-
-        img.alt = chunk[i].name;
+        box.className =
+          "photo-box";
 
 
-        // ==================================
+        const img =
+          document.createElement("img");
+
+        img.src =
+          chunk[i].src;
+
+        img.alt =
+          chunk[i].name;
+
+
+        // =================================
         // ドラッグ＆ドロップ
-        // 写真部分だけをドラッグ可能にする
-        // ==================================
+        // =================================
 
         box.draggable = true;
 
 
         // ドラッグ開始
-        box.addEventListener("dragstart", () => {
+        box.addEventListener(
+          "dragstart",
+          () => {
 
-          draggedIndex = photoIndex;
+            draggedIndex =
+              photoIndex;
 
-          box.classList.add("dragging");
-
-        });
+            box.classList.add(
+              "dragging"
+            );
+          }
+        );
 
 
         // ドラッグ終了
-        box.addEventListener("dragend", () => {
+        box.addEventListener(
+          "dragend",
+          () => {
 
-          draggedIndex = null;
+            draggedIndex = null;
 
-          box.classList.remove("dragging");
-
-        });
+            box.classList.remove(
+              "dragging"
+            );
+          }
+        );
 
 
         // ドラッグ中に他の写真の上を通過
-        box.addEventListener("dragover", (e) => {
+        box.addEventListener(
+          "dragover",
+          (e) => {
 
-          e.preventDefault();
-
-        });
+            e.preventDefault();
+          }
+        );
 
 
         // ドロップ
-        box.addEventListener("drop", (e) => {
+        box.addEventListener(
+          "drop",
+          (e) => {
 
-          e.preventDefault();
+            e.preventDefault();
 
-          if (draggedIndex === null) {
-            return;
+            if (draggedIndex === null) {
+              return;
+            }
+
+            const targetIndex =
+              photoIndex;
+
+            movePhoto(
+              draggedIndex,
+              targetIndex
+            );
           }
-
-          const targetIndex = photoIndex;
-
-          movePhoto(
-            draggedIndex,
-            targetIndex
-          );
-
-        });
+        );
 
 
-        // ==================================
+        // =================================
         // 写真番号
-        // ==================================
+        // =================================
 
-        const num = document.createElement("span");
+        const num =
+          document.createElement("span");
 
-        num.className = "photo-number";
+        num.className =
+          "photo-number";
 
         num.textContent =
           `${photoIndex + 1}`;
 
 
-        // ==================================
+        // =================================
         // 写真を配置
-        // ==================================
+        // =================================
 
         box.appendChild(img);
 
-        // 写真番号を表示したい場合
-        // box.appendChild(num);
+        /*
+         * 写真番号を表示したい場合
+         *
+         * box.appendChild(num);
+         */
 
 
-        // ==================================
+        // =================================
+        // スマホ用順番変更ボタン
+        // =================================
+
+        const orderButtons =
+          document.createElement("div");
+
+        orderButtons.className =
+          "mobile-order-buttons";
+
+
+        // -------------------------------
+        // ↑ボタン
+        // -------------------------------
+
+        const upButton =
+          document.createElement("button");
+
+        upButton.type = "button";
+
+        upButton.textContent =
+          "↑ 前へ";
+
+
+        upButton.addEventListener(
+          "click",
+          () => {
+
+            movePhotoUp(
+              photoIndex
+            );
+          }
+        );
+
+
+        // -------------------------------
+        // ↓ボタン
+        // -------------------------------
+
+        const downButton =
+          document.createElement("button");
+
+        downButton.type = "button";
+
+        downButton.textContent =
+          "↓ 次へ";
+
+
+        downButton.addEventListener(
+          "click",
+          () => {
+
+            movePhotoDown(
+              photoIndex
+            );
+          }
+        );
+
+
+        orderButtons.appendChild(
+          upButton
+        );
+
+        orderButtons.appendChild(
+          downButton
+        );
+
+
+        // =================================
         // 個別削除ボタン
-        // ==================================
+        // =================================
 
         const deleteBtn =
           document.createElement("button");
@@ -279,64 +438,79 @@ function render() {
 
         deleteBtn.type = "button";
 
-        deleteBtn.textContent = "削除";
+        deleteBtn.textContent =
+          "削除";
 
 
-        deleteBtn.addEventListener("click", () => {
+        deleteBtn.addEventListener(
+          "click",
+          () => {
 
-          if (
-            !confirm(
-              "この写真を削除しますか？"
-            )
-          ) {
-            return;
+            if (
+              !confirm(
+                "この写真を削除しますか？"
+              )
+            ) {
+              return;
+            }
+
+
+            // 写真を1枚削除
+            photos.splice(
+              photoIndex,
+              1
+            );
+
+
+            // 画面を再描画
+            render();
           }
+        );
 
 
-          // 写真を1枚削除
-          photos.splice(photoIndex, 1);
-
-
-          // 画面を再描画
-          render();
-
-        });
-
-
-        // ==================================
+        // =================================
         // カードに追加
-        // ==================================
+        // =================================
 
-        card.appendChild(caption);
+        card.appendChild(
+          caption
+        );
 
-        card.appendChild(box);
+        card.appendChild(
+          box
+        );
 
-        card.appendChild(deleteBtn);
+        card.appendChild(
+          orderButtons
+        );
+
+        card.appendChild(
+          deleteBtn
+        );
 
       }
 
-      // ====================================
+
+      // ==================================
       // 写真がない空の枠
-      // ====================================
+      // ==================================
 
       else {
 
-        card.classList.add("empty-card");
-
+        card.classList.add(
+          "empty-card"
+        );
       }
 
 
       grid.appendChild(card);
-
     }
 
 
     page.appendChild(grid);
 
     pages.appendChild(page);
-
   }
-
 }
 
 
@@ -344,42 +518,46 @@ function render() {
 // 全削除
 // ========================================
 
-clearBtn.addEventListener("click", () => {
+clearBtn.addEventListener(
+  "click",
+  () => {
 
-  if (
-    photos.length &&
-    !confirm(
-      "すべての写真を削除しますか？"
-    )
-  ) {
-    return;
+    if (
+      photos.length &&
+      !confirm(
+        "すべての写真を削除しますか？"
+      )
+    ) {
+      return;
+    }
+
+    photos = [];
+
+    render();
   }
-
-
-  photos = [];
-
-  render();
-
-});
+);
 
 
 // ========================================
 // 印刷
 // ========================================
 
-printBtn.addEventListener("click", () => {
+printBtn.addEventListener(
+  "click",
+  () => {
 
-  if (!photos.length) {
+    if (!photos.length) {
 
-    alert("写真を追加してください。");
+      alert(
+        "写真を追加してください。"
+      );
 
-    return;
+      return;
+    }
+
+    window.print();
   }
-
-
-  window.print();
-
-});
+);
 
 
 // ========================================
