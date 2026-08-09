@@ -11,6 +11,18 @@ let draggedIndex = null;
 
 
 // ========================================
+// 写真の圧縮設定
+// ========================================
+
+// 写真の長辺を最大1800pxにする
+const MAX_IMAGE_SIZE = 1800;
+
+// JPEGの品質
+// 0.0 ～ 1.0
+const JPEG_QUALITY = 0.8;
+
+
+// ========================================
 // 写真を追加
 // ========================================
 
@@ -33,7 +45,7 @@ fileInput.addEventListener("change", async (e) => {
 
 
 // ========================================
-// ファイルをDataURLに変換
+// ファイルを読み込み、圧縮してDataURLに変換
 // ========================================
 
 function fileToDataURL(file) {
@@ -44,13 +56,113 @@ function fileToDataURL(file) {
 
     reader.onload = () => {
 
-      resolve({
-        src: reader.result,
-        name: file.name,
-        caption: ""
-      });
+      const img = new Image();
 
+      img.onload = () => {
+
+        // --------------------------------
+        // 元画像のサイズ
+        // --------------------------------
+
+        let width = img.naturalWidth;
+        let height = img.naturalHeight;
+
+
+        // --------------------------------
+        // 長辺が1800pxを超える場合だけ縮小
+        // --------------------------------
+
+        if (
+          width > MAX_IMAGE_SIZE ||
+          height > MAX_IMAGE_SIZE
+        ) {
+
+          if (width >= height) {
+
+            // 横長
+            height =
+              Math.round(
+                height *
+                (MAX_IMAGE_SIZE / width)
+              );
+
+            width =
+              MAX_IMAGE_SIZE;
+
+          } else {
+
+            // 縦長
+            width =
+              Math.round(
+                width *
+                (MAX_IMAGE_SIZE / height)
+              );
+
+            height =
+              MAX_IMAGE_SIZE;
+          }
+        }
+
+
+        // --------------------------------
+        // Canvasを作成
+        // --------------------------------
+
+        const canvas =
+          document.createElement("canvas");
+
+        canvas.width = width;
+        canvas.height = height;
+
+
+        // --------------------------------
+        // Canvasに画像を描画
+        // --------------------------------
+
+        const ctx =
+          canvas.getContext("2d");
+
+        ctx.drawImage(
+          img,
+          0,
+          0,
+          width,
+          height
+        );
+
+
+        // --------------------------------
+        // JPEGとして圧縮
+        // --------------------------------
+
+        const compressedDataURL =
+          canvas.toDataURL(
+            "image/jpeg",
+            JPEG_QUALITY
+          );
+
+
+        // --------------------------------
+        // 圧縮後の画像を保存
+        // --------------------------------
+
+        resolve({
+
+          src: compressedDataURL,
+
+          name: file.name,
+
+          caption: ""
+
+        });
+      };
+
+
+      img.onerror = reject;
+
+      img.src = reader.result;
     };
+
 
     reader.onerror = reject;
 
@@ -146,7 +258,8 @@ function render() {
 
   if (photos.length === 0) {
 
-    const msg = document.createElement("div");
+    const msg =
+      document.createElement("div");
 
     msg.style.textAlign = "center";
 
@@ -171,12 +284,14 @@ function render() {
     start += 4
   ) {
 
-    const page = document.createElement("section");
+    const page =
+      document.createElement("section");
 
     page.className = "page";
 
 
-    const grid = document.createElement("div");
+    const grid =
+      document.createElement("div");
 
     grid.className = "photo-grid";
 
@@ -186,7 +301,10 @@ function render() {
     // ====================================
 
     const chunk =
-      photos.slice(start, start + 4);
+      photos.slice(
+        start,
+        start + 4
+      );
 
 
     for (let i = 0; i < 4; i++) {
@@ -232,10 +350,6 @@ function render() {
           "input",
           () => {
 
-            /*
-             * chunk[i]ではなく
-             * photos[photoIndex]を直接変更
-             */
             photos[photoIndex].caption =
               caption.value;
           }
@@ -369,9 +483,9 @@ function render() {
           "mobile-order-buttons";
 
 
-        // -------------------------------
+        // ---------------------------------
         // ↑ボタン
-        // -------------------------------
+        // ---------------------------------
 
         const upButton =
           document.createElement("button");
@@ -393,9 +507,9 @@ function render() {
         );
 
 
-        // -------------------------------
+        // ---------------------------------
         // ↓ボタン
-        // -------------------------------
+        // ---------------------------------
 
         const downButton =
           document.createElement("button");
